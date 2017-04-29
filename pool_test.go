@@ -34,7 +34,7 @@ var _ = Describe("GoPool Test", func() {
 						return nil
 					}
 				})
-				gp.ShutDown()
+				gp.ShutDown(true, time.Second)
 
 			})
 		})
@@ -55,7 +55,7 @@ var _ = Describe("GoPool Test", func() {
 					}
 				})
 				time.Sleep(time.Second)
-				gp.ShutDown()
+				gp.ShutDown(true, time.Second)
 
 			})
 		})
@@ -82,10 +82,40 @@ var _ = Describe("GoPool Test", func() {
 				gp.AddJob("test1", fn)
 				gp.AddJob("test2", fn)
 				before := time.Now()
-				gp.ShutDown()
+				gp.ShutDown(true, time.Second)
 				duration := time.Since(before)
 
 				Expect(duration).ShouldNot(BeNumerically(">", 5009171659))
+
+			})
+		})
+
+		Context("if we create an instance of gopool and create multiple jobs", func() {
+			It("if the job panics we should exit safely", func() {
+				gp := NewGoPool(context.Background())
+				Expect(gp).ShouldNot(BeNil())
+
+				fn := func(ctx context.Context) error {
+					select {
+					case <-ctx.Done():
+						time.Sleep(time.Second * 5)
+
+						log.Println("shut down succeessfully")
+						return nil
+					case <-time.After(time.Second * 10):
+						panic("test panic")
+						time.Sleep(time.Second * 10)
+						return nil
+					}
+				}
+				gp.AddJob("test", fn)
+				gp.AddJob("test1", fn)
+				gp.AddJob("test2", fn)
+				before := time.Now()
+				gp.ShutDown(false, time.Second * 2)
+				duration := time.Since(before)
+
+				Expect(duration).ShouldNot(BeNumerically("<", 2000117626))
 
 			})
 		})

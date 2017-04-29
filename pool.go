@@ -5,6 +5,7 @@ import (
 
 	"log"
 	"sync"
+	"time"
 )
 
 // StdLogger is used to log error messages.
@@ -70,9 +71,30 @@ var (
 	}
 )
 
-func (gp *goPool) ShutDown() {
+// waitTimeout waits for the waitgroup for the specified max timeout.
+// Returns true if waiting timed out.
+func (gp *goPool) waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
+	c := make(chan struct{})
+	go func() {
+		defer close(c)
+		wg.Wait()
+	}()
+	select {
+	case <-c:
+		return false // completed normally
+	case <-time.After(timeout):
+		return true // timed out
+	}
+}
+
+func (gp *goPool) ShutDown(waitforver bool, timeout time.Duration) {
 	gp.canclFunc()
-	gp.wg.Wait()
+	if waitforver {
+		gp.wg.Wait()
+	} else {
+		gp.waitTimeout(&gp.wg, timeout)
+	}
+
 }
 
 func (gp *goPool) AddJob(method string, fn GoPoolFunc) {
