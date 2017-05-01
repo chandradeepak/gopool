@@ -41,7 +41,7 @@ type goPool struct {
 }
 
 //this is a function which takes a context and exits when the context is done.
-type GoPoolFunc func(ctx context.Context) error
+type GoPoolFunc func(ctx context.Context, args ...interface{}) error
 
 func NewGoPool(ctx context.Context) *goPool {
 	cancelctx, canclFunc := context.WithCancel(ctx)
@@ -97,7 +97,7 @@ func (gp *goPool) ShutDown(waitforver bool, timeout time.Duration) {
 
 }
 
-func (gp *goPool) AddJob(method string, fn GoPoolFunc) {
+func (gp *goPool) AddJob(method string, fn GoPoolFunc, args ...interface{}) {
 	gp.wg.Add(1)
 
 	go func() {
@@ -110,6 +110,6 @@ func (gp *goPool) AddJob(method string, fn GoPoolFunc) {
 				}
 			}
 		}()
-		fn(gp.Context())
+		fn(gp.Context(), args...)
 	}()
 }
