@@ -1,9 +1,10 @@
 package gopool
 
 import (
-	"context"
 	"log"
 	"time"
+
+	"golang.org/x/net/context"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -157,8 +158,7 @@ var _ = Describe("GoPool Test", func() {
 			})
 		})
 
-
-		FContext("if we create an instance of gopool and create multiple jobs and call shutdown multiple times", func() {
+		Context("if we create an instance of gopool and create multiple jobs and call shutdown multiple times", func() {
 			It("then we should not panic", func() {
 				gp := NewGoPool(context.Background())
 				Expect(gp).ShouldNot(BeNil())

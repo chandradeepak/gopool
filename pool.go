@@ -1,7 +1,7 @@
 package gopool
 
 import (
-	"context"
+	"golang.org/x/net/context"
 
 	"log"
 	"sync"
