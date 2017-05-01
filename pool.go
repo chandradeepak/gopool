@@ -34,7 +34,7 @@ func (gpl *GoPoolLogger) Fatal(v ...interface{}) {
 	log.Println(v)
 }
 
-type goPool struct {
+type GoPool struct {
 	wg        sync.WaitGroup
 	cancelctx context.Context
 	canclFunc context.CancelFunc
@@ -43,15 +43,15 @@ type goPool struct {
 //this is a function which takes a context and exits when the context is done.
 type GoPoolFunc func(ctx context.Context, args ...interface{}) error
 
-func NewGoPool(ctx context.Context) *goPool {
+func NewGoPool(ctx context.Context) *GoPool {
 	cancelctx, canclFunc := context.WithCancel(ctx)
-	return &goPool{
+	return &GoPool{
 		cancelctx: cancelctx,
 		canclFunc: canclFunc,
 	}
 }
 
-func (gp *goPool) Context() context.Context {
+func (gp *GoPool) Context() context.Context {
 	return gp.cancelctx
 }
 
@@ -73,7 +73,7 @@ var (
 
 // waitTimeout waits for the waitgroup for the specified max timeout.
 // Returns true if waiting timed out.
-func (gp *goPool) waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
+func (gp *GoPool) waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
 	c := make(chan struct{})
 	go func() {
 		defer close(c)
@@ -87,7 +87,7 @@ func (gp *goPool) waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
 	}
 }
 
-func (gp *goPool) ShutDown(waitforver bool, timeout time.Duration) {
+func (gp *GoPool) ShutDown(waitforver bool, timeout time.Duration) {
 	gp.canclFunc()
 	if waitforver {
 		gp.wg.Wait()
@@ -97,7 +97,7 @@ func (gp *goPool) ShutDown(waitforver bool, timeout time.Duration) {
 
 }
 
-func (gp *goPool) AddJob(method string, fn GoPoolFunc, args ...interface{}) {
+func (gp *GoPool) AddJob(method string, fn GoPoolFunc, args ...interface{}) {
 	gp.wg.Add(1)
 
 	go func() {
