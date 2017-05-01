@@ -120,8 +120,8 @@ var _ = Describe("GoPool Test", func() {
 			})
 		})
 
-		Context("if we create an instance of gopool and create multiple jobs", func() {
-			It("if the job panics we should exit safely", func() {
+		Context("if we create an instance of gopool and create multiple jobs with mutiple arguments", func() {
+			It("then we should execute all of them sucessfully", func() {
 				gp := NewGoPool(context.Background())
 				Expect(gp).ShouldNot(BeNil())
 
@@ -152,6 +152,47 @@ var _ = Describe("GoPool Test", func() {
 				gp.AddJob("test", fn, context.Background(), context.Background(), 5)
 				gp.AddJob("test1", fn, context.Background(), context.Background(), 5)
 				gp.AddJob("test2", fn, context.Background(), context.Background(), 5)
+				gp.ShutDown(true, time.Second)
+
+			})
+		})
+
+
+		FContext("if we create an instance of gopool and create multiple jobs and call shutdown multiple times", func() {
+			It("then we should not panic", func() {
+				gp := NewGoPool(context.Background())
+				Expect(gp).ShouldNot(BeNil())
+
+				fn := func(ctx context.Context, args ...interface{}) error {
+					select {
+					case <-ctx.Done():
+						time.Sleep(time.Second * 5)
+						log.Println("the value passed is", "arg", args[2])
+
+						log.Println("shut down succeessfully")
+						return nil
+					case <-args[0].(context.Context).Done():
+						time.Sleep(time.Second * 5)
+
+						log.Println("shut down succeessfully")
+						return nil
+					case <-args[1].(context.Context).Done():
+						time.Sleep(time.Second * 5)
+
+						log.Println("shut down succeessfully")
+						return nil
+					case <-time.After(time.Second * 10):
+						panic("test panic")
+						time.Sleep(time.Second * 10)
+						return nil
+					}
+				}
+				gp.AddJob("test", fn, context.Background(), context.Background(), 5)
+				gp.AddJob("test1", fn, context.Background(), context.Background(), 5)
+				gp.AddJob("test2", fn, context.Background(), context.Background(), 5)
+				gp.ShutDown(true, time.Second)
+				gp.ShutDown(true, time.Second)
+				gp.ShutDown(true, time.Second)
 				gp.ShutDown(true, time.Second)
 
 			})
