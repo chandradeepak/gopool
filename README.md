@@ -15,19 +15,33 @@ till the timeout mentioned elapsed.
 
 usage
 -----
-
     gp := NewGoPool(context.Background())
-    gp.AddJob("test", func(ctx context.Context) error {
-        select {
+    fn := func(ctx context.Context, args ...interface{}) error {
+    select {
         case <-ctx.Done():
-            log.Println("context closed")
+            time.Sleep(time.Second * 5)
+            log.Println("the value passed is", "arg", args[2])
+    
+            log.Println("shut down succeessfully")
             return nil
-        default:
+        case <-args[0].(context.Context).Done():
+            time.Sleep(time.Second * 5)
+    
+            log.Println("shut down succeessfully")
+            return nil
+        case <-args[1].(context.Context).Done():
+            time.Sleep(time.Second * 5)
+    
+            log.Println("shut down succeessfully")
+            return nil
+        case <-time.After(time.Second * 10):
             panic("test panic")
             time.Sleep(time.Second * 10)
             return nil
         }
-    })
-    time.Sleep(time.Second)
-    gp.ShutDown(true,time.Second) 
+    }
+    gp.AddJob("test", fn, context.Background(), context.Background(), 5)
+    gp.AddJob("test1", fn, context.Background(), context.Background(), 5)
+    gp.AddJob("test2", fn, context.Background(), context.Background(), 5)
+    gp.ShutDown(true, time.Second)
 

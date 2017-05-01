@@ -115,7 +115,7 @@ var _ = Describe("GoPool Test", func() {
 				gp.ShutDown(false, time.Second*2)
 				duration := time.Since(before)
 
-				Expect(duration).ShouldNot(BeNumerically("<", 2000117626))
+				Expect(duration).Should(BeNumerically("<", 2100059310))
 
 			})
 		})
