@@ -55,6 +55,10 @@ func (gp *GoPool) Context() context.Context {
 	return gp.cancelctx
 }
 
+func (gp *GoPool) WaitGroup() *sync.WaitGroup {
+	return &gp.wg
+}
+
 var (
 	PanicHandler = func(err interface{}, method string) {
 
