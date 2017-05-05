@@ -117,3 +117,20 @@ func (gp *GoPool) AddJob(method string, fn func(ctx context.Context, args ...int
 		fn(gp.Context(), args...)
 	}()
 }
+
+func (gp *GoPool) AddSyncJob(method string, fn func(ctx context.Context, args ...interface{}) error, args ...interface{}) {
+	gp.wg.Add(1)
+
+	func() {
+		defer func() {
+			gp.wg.Done()
+			handler := PanicHandler
+			if handler != nil {
+				if err := recover(); err != nil {
+					handler(err, method)
+				}
+			}
+		}()
+		fn(gp.Context(), args...)
+	}()
+}
