@@ -101,6 +101,12 @@ func (gp *GoPool) ShutDown(waitforver bool, timeout time.Duration) {
 
 }
 
+//this request a shutdown and doesnt wait for shutdown to happen. typically this can be called inside
+// the jobs that are spawned so that they can exit and make other go routines also exit.
+func (gp *GoPool) RequestShutDown() {
+	gp.canclFunc()
+}
+
 func (gp *GoPool) AddJob(method string, fn func(ctx context.Context, args ...interface{}) error, args ...interface{}) {
 	gp.wg.Add(1)
 
